@@ -9,33 +9,19 @@ const VolunteerFeed = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        // Mock donations data
-        const mockDonations = [
-            {
-                _id: '1',
-                foodType: 'Rice and Curry',
-                quantity: '5 meals',
-                bestBefore: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), // 2 hours from now
-                location: 'Downtown',
-                address: '123 Main St',
-                donorName: 'John Doe',
-                imageUrl: 'https://via.placeholder.com/300x200?text=Rice+Curry',
-                status: 'available'
-            },
-            {
-                _id: '2',
-                foodType: 'Pizza Slices',
-                quantity: '10 slices',
-                bestBefore: new Date(Date.now() + 1 * 60 * 60 * 1000).toISOString(), // 1 hour from now
-                location: 'Uptown',
-                address: '456 Elm St',
-                donorName: 'Jane Smith',
-                imageUrl: 'https://via.placeholder.com/300x200?text=Pizza',
-                status: 'available'
+        const fetchDonations = async () => {
+            try {
+                const response = await fetch('http://localhost:5000/api/donations');
+                const data = await response.json();
+                setDonations(data);
+            } catch (error) {
+                console.error("Error fetching donations:", error);
+            } finally {
+                setLoading(false);
             }
-        ];
-        setDonations(mockDonations);
-        setLoading(false);
+        };
+
+        fetchDonations();
     }, []);
 
     const handleClaim = (id) => {
@@ -103,7 +89,7 @@ const DonationCard = ({ donation, onClaim, index }) => {
                 <div className="flex items-center gap-4 text-sm text-gray-500 mb-6">
                     <div className="flex items-center gap-1">
                         <MapPin size={16} />
-                        {donation.address || donation.location}
+                        {donation.address || "Unknown Location"}
                     </div>
                     <div className="flex items-center gap-1">
                         <Clock size={16} />

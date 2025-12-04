@@ -56,7 +56,7 @@ function App() {
           <Route path="admin/ngo-approval" element={<NGOApproval />} />
           <Route path="admin/user-management" element={<UserManagement />} />
           <Route path="admin/reports" element={<Reports />} />
-          <Route path="donation/:id" element={<DonationDetails />} />
+
          
         </Route>
       </Routes>

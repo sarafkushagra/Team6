@@ -95,9 +95,9 @@ const Login = () => {
 
         <div className="text-center text-sm text-gray-600">
           Don't have an account?{' '}
-          <a href="/donate" className="text-blue-500 hover:underline">Register as Donor</a>{' '}
+          <a href="/register/donor" className="text-blue-500 hover:underline">Register as Donor</a>{' '}
           or{' '}
-          <a href="/volunteer" className="text-blue-500 hover:underline">Join as Volunteer</a>
+          <a href="/register/volunteer" className="text-blue-500 hover:underline">Join as Volunteer</a>
         </div>
 
         <div className="pt-4 text-xs text-gray-500">

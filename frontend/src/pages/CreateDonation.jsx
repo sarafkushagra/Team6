@@ -67,50 +67,49 @@ export default function CreateDonation() {
   };
 
   return (
-    <div className="page" style={{ maxWidth: 420, margin: "0 auto", padding: 16 }}>
-      <h2>Create Donation</h2>
+    <div className="max-w-md mx-auto p-4 bg-white rounded-lg shadow-md mt-10">
+      <h2 className="text-2xl font-bold mb-4 text-center">Create Donation</h2>
 
-      <label style={{ display: "block", marginTop: 10 }}>Food Type</label>
+      <label className="block mt-3 text-sm font-medium text-gray-700">Food Type</label>
       <input
-        style={{ width: "100%", padding: 8, marginTop: 4 }}
+        className="w-full p-2 mt-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
         placeholder="e.g. Veg Rice"
         value={foodType}
         onChange={(e) => setFoodType(e.target.value)}
       />
 
-      <label style={{ display: "block", marginTop: 10 }}>Quantity (kg)</label>
+      <label className="block mt-3 text-sm font-medium text-gray-700">Quantity (kg)</label>
       <input
-        style={{ width: "100%", padding: 8, marginTop: 4 }}
+        className="w-full p-2 mt-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
         type="number"
         value={qty}
         onChange={(e) => setQty(e.target.value)}
       />
 
-      <label style={{ display: "block", marginTop: 10 }}>Best Before (Hours from now)</label>
+      <label className="block mt-3 text-sm font-medium text-gray-700">Best Before (Hours from now)</label>
       <input
-        style={{ width: "100%", padding: 8, marginTop: 4 }}
+        className="w-full p-2 mt-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
         type="number"
         value={bestBefore}
         onChange={(e) => setBestBefore(e.target.value)}
       />
 
-      <label style={{ display: "block", marginTop: 10 }}>Pickup Address</label>
+      <label className="block mt-3 text-sm font-medium text-gray-700">Pickup Address</label>
       <input
-        style={{ width: "100%", padding: 8, marginTop: 4 }}
+        className="w-full p-2 mt-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
         placeholder="e.g. Flat 101, Building A"
         value={address}
         onChange={(e) => setAddress(e.target.value)}
       />
 
-      <div style={{ marginTop: 10, fontSize: 13, color: "#666" }}>
+      <div className="mt-2 text-sm text-gray-500">
         Location: {location ? "Detected ✅" : "Detecting... ⏳"}
       </div>
 
       <button
-        className="btn"
         onClick={handleSubmit}
         disabled={loading}
-        style={{ marginTop: 20, width: "100%", padding: 10, background: "#2563eb", color: "#fff", border: "none", borderRadius: 8 }}
+        className="w-full mt-6 p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors font-semibold"
       >
         {loading ? "Posting..." : "Submit Donation"}
       </button>

@@ -25,10 +25,34 @@ export default function DonorRegister() {
       alert('Please get location');
       return;
     }
-    // Mock registration
-    alert('Registered successfully as donor!');
-    localStorage.setItem('token', 'mock-donor-token');
-    navigate('/donor');
+
+    try {
+      const res = await fetch('http://localhost:5000/api/users/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          password: form.password,
+          role: 'donor',
+          phone: form.phone,
+          location
+        })
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        alert('Registered successfully as donor!');
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        navigate('/donor');
+      } else {
+        alert(data.message || 'Registration failed');
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Error registering');
+    }
   };
 
   return (
