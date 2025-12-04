@@ -18,6 +18,11 @@ import AdminDashboard from './pages/AdminDashboard';
 import DonationDetails from './pages/DonationDetails';
 import ClaimModal from './pages/ClaimModal';
 import AdminDashboard from './pages/AdminDashboard';
+import ActiveDonationsMap from './pages/AdminDash/ActiveDonationMap';
+import NGOApproval from './pages/AdminDash/NGOApproval';
+import UserManagement from './pages/AdminDash/UserManagement';
+import Reports from './pages/AdminDash/Reports';
+import DonationDetails from './pages/DonationDetails';
 
 function App() {
   return (
@@ -40,6 +45,11 @@ function App() {
           <Route path="claim/:id" element={<ClaimModal />} />
           <Route path="auth" element={<AuthOnboardPage />} />
           <Route path="admin" element={<AdminDashboard />} />
+          <Route path="admin/active-map" element={<ActiveDonationsMap />} />
+          <Route path="admin/ngo-approval" element={<NGOApproval />} />
+          <Route path="admin/user-management" element={<UserManagement />} />
+          <Route path="admin/reports" element={<Reports />} />
+          <Route path="donation/:id" element={<DonationDetails />} />
         </Route>
       </Routes>
     </Router>
