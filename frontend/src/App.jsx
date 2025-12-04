@@ -5,6 +5,7 @@ import Home from './pages/Home';
 import VolunteerFeed from './pages/VolunteerFeed';
 import DonorDashboard from './pages/DonorDashboard';
 import PickupScreen from './pages/PickupScreen';
+import AdminDashboard from './pages/AdminDashboard';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
           <Route path="volunteer" element={<VolunteerFeed />} />
           <Route path="donor" element={<DonorDashboard />} />
           <Route path="pickup/:id" element={<PickupScreen />} />
+          <Route path="admin" element={<AdminDashboard />} />
         </Route>
       </Routes>
     </Router>
