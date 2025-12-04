@@ -67,7 +67,7 @@ const Hero = () => {
                         className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-8"
                     >
                         <Link
-                            to="/donate"
+                            to="/donor"
                             className="group relative px-8 py-4 bg-emerald-600 text-white rounded-full font-bold text-lg overflow-hidden shadow-lg hover:shadow-emerald-500/30 transition-all hover:-translate-y-1"
                         >
                             <span className="relative z-10 flex items-center gap-2">
