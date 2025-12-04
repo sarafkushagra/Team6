@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { apiRequest } from "../api";
+import { useNavigate } from 'react-router-dom';
 
 export default function CreateDonation() {
   const [foodType, setFoodType] = useState("");
@@ -8,6 +8,7 @@ export default function CreateDonation() {
   const [address, setAddress] = useState("");
   const [location, setLocation] = useState(null);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -25,34 +26,41 @@ export default function CreateDonation() {
 
   const handleSubmit = async () => {
     const token = localStorage.getItem('token');
-    if (!token) return alert("Please login first");
-    if (!location) return alert("Location not detected yet. Please allow location access.");
-
+    if (!token) {
+      alert('Please login');
+      return;
+    }
+    if (!location) {
+      alert('Location not detected. Please allow location access.');
+      return;
+    }
+    const expiry = new Date(Date.now() + parseInt(bestBefore) * 3600000);
     setLoading(true);
     try {
-      // Calculate bestBefore date
-      const bestBeforeDate = new Date();
-      bestBeforeDate.setHours(bestBeforeDate.getHours() + parseInt(bestBefore));
-
-      const payload = {
-        foodType,
-        quantity: qty,
-        bestBefore: bestBeforeDate,
-        location,
-        address,
-        imageUrl: "https://placehold.co/600x400?text=Food+Image" // Placeholder for now
-      };
-
-      await apiRequest('/donations', 'POST', payload, token);
-      alert("Donation Posted Successfully!");
-      // Reset or redirect
-      setFoodType("");
-      setQty("");
-      setBestBefore("");
-      setAddress("");
-    } catch (err) {
-      console.error(err);
-      alert("Failed to post: " + (err.message || err));
+      const res = await fetch('http://localhost:5000/api/donations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          foodType,
+          quantity: qty + 'kg',
+          bestBefore: expiry,
+          location,
+          address: address || 'Current location',
+          imageUrl: "https://placehold.co/600x400?text=Food+Image"
+        })
+      });
+      if (res.ok) {
+        alert('Donation posted successfully!');
+        navigate('/donor');
+      } else {
+        alert('Failed to post');
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Error posting donation');
     } finally {
       setLoading(false);
     }
@@ -109,3 +117,4 @@ export default function CreateDonation() {
     </div>
   );
 }
+

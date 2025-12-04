@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   CheckCircle, 
   XCircle, 
@@ -11,53 +11,48 @@ import {
 } from 'lucide-react';
 
 const NGOApproval = () => {
-  // Mock Data: Pending NGO Applications
-  const [applicants, setApplicants] = useState([
-    { 
-      id: 1, 
-      name: "Helping Hands Foundation", 
-      regNumber: "NGO-DL-2023-889", 
-      location: "New Delhi, India", 
-      appliedDate: "2 hours ago",
-      trustScore: 98, // "AI" Feature
-      docUrl: "https://via.placeholder.com/400x500?text=Registration+Certificate",
-      status: "Pending"
-    },
-    { 
-      id: 2, 
-      name: "City Food Drive", 
-      regNumber: "NGO-MH-2024-112", 
-      location: "Mumbai, India", 
-      appliedDate: "5 hours ago",
-      trustScore: 45, // Low score example
-      docUrl: "https://via.placeholder.com/400x500?text=Blurry+Document",
-      status: "Pending"
-    },
-    { 
-      id: 3, 
-      name: "Stray Animal Rescue", 
-      regNumber: "NGO-KA-2022-334", 
-      location: "Bangalore, India", 
-      appliedDate: "1 day ago",
-      trustScore: 92,
-      docUrl: "https://via.placeholder.com/400x500?text=Valid+Cert",
-      status: "Pending"
-    }
-  ]);
-
+  const [applicants, setApplicants] = useState([]);
   const [selectedApplicant, setSelectedApplicant] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // Handle Actions
-  const handleApprove = (id) => {
-    setApplicants(applicants.filter(app => app.id !== id));
-    setSelectedApplicant(null);
-    alert("NGO Verified & Account Activated!"); // Replace with Toast in real app
+  useEffect(() => {
+    fetchNGOs();
+  }, []);
+
+  const fetchNGOs = async () => {
+    try {
+      const res = await fetch('http://localhost:5000/api/ngos');
+      const data = await res.json();
+      setApplicants(data.filter(ngo => !ngo.verified));
+      setLoading(false);
+    } catch (error) {
+      console.error(error);
+      setLoading(false);
+    }
+  };
+
+  const handleApprove = async (id) => {
+    const token = localStorage.getItem('token');
+    try {
+      await fetch(`http://localhost:5000/api/ngos/${id}/verify`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      setApplicants(applicants.filter(app => app._id !== id));
+      setSelectedApplicant(null);
+      alert("NGO Verified!");
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const handleReject = (id) => {
-    setApplicants(applicants.filter(app => app.id !== id));
+    // For simplicity, just remove from list
+    setApplicants(applicants.filter(app => app._id !== id));
     setSelectedApplicant(null);
   };
+
+  if (loading) return <div>Loading...</div>;
 
   return (
     <div className="min-h-screen bg-gray-50 p-6 font-sans">
@@ -99,8 +94,8 @@ const NGOApproval = () => {
             <tbody>
               {applicants.map((app) => (
                 <tr 
-                  key={app.id} 
-                  className={`border-b border-gray-50 hover:bg-gray-50 transition cursor-pointer ${selectedApplicant?.id === app.id ? 'bg-indigo-50' : ''}`}
+                  key={app._id} 
+                  className={`border-b border-gray-50 hover:bg-gray-50 transition cursor-pointer ${selectedApplicant?._id === app._id ? 'bg-indigo-50' : ''}`}
                   onClick={() => setSelectedApplicant(app)}
                 >
                   <td className="p-4">
@@ -110,16 +105,14 @@ const NGOApproval = () => {
                       </div>
                       <div>
                         <p className="font-bold text-gray-800 text-sm">{app.name}</p>
-                        <p className="text-xs text-gray-500">{app.location}</p>
+                        <p className="text-xs text-gray-500">{app.location ? 'Location set' : 'No location'}</p>
                       </div>
                     </div>
                   </td>
-                  <td className="p-4 text-sm text-gray-600 font-mono">{app.regNumber}</td>
+                  <td className="p-4 text-sm text-gray-600 font-mono">{app._id}</td>
                   <td className="p-4">
-                    <div className={`inline-flex items-center px-2 py-1 rounded text-xs font-bold ${
-                      app.trustScore > 80 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                    }`}>
-                      {app.trustScore}% Match
+                    <div className="inline-flex items-center px-2 py-1 rounded text-xs font-bold bg-green-100 text-green-700">
+                      Pending
                     </div>
                   </td>
                   <td className="p-4">
@@ -146,7 +139,7 @@ const NGOApproval = () => {
             <div className="p-4 bg-indigo-600 text-white flex justify-between items-center">
               <div>
                 <h2 className="font-bold">Verification Dossier</h2>
-                <p className="text-xs opacity-80">ID: {selectedApplicant.id}</p>
+                <p className="text-xs opacity-80">ID: {selectedApplicant._id}</p>
               </div>
               <button onClick={() => setSelectedApplicant(null)} className="text-white hover:bg-indigo-700 p-1 rounded">
                 <XCircle size={20} />
@@ -195,13 +188,13 @@ const NGOApproval = () => {
             {/* Action Footer */}
             <div className="p-4 bg-white border-t border-gray-200 grid grid-cols-2 gap-4">
               <button 
-                onClick={() => handleReject(selectedApplicant.id)}
+                onClick={() => handleReject(selectedApplicant._id)}
                 className="py-3 rounded-lg border border-red-200 text-red-600 font-bold hover:bg-red-50 transition"
               >
                 Reject
               </button>
               <button 
-                onClick={() => handleApprove(selectedApplicant.id)}
+                onClick={() => handleApprove(selectedApplicant._id)}
                 className="py-3 rounded-lg bg-green-600 text-white font-bold hover:bg-green-700 shadow-md transition flex justify-center items-center"
               >
                 <CheckCircle size={18} className="mr-2" />
