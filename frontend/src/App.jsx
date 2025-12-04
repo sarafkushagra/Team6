@@ -6,7 +6,6 @@ import VolunteerFeed from './pages/VolunteerFeed';
 import DonorDashboard from './pages/DonorDashboard';
 import PickupScreen from './pages/PickupScreen';
 import ActiveTripPage from './pages/ActiveTripPage';
-
 import HomeMapListPage from './pages/HomeMapListPage';
 import OTPPickupPage from './pages/OTPPickupPage';
 import OTPVerify from './pages/OTPVerify';
@@ -18,6 +17,7 @@ import AuthOnboardPage from './pages/AuthOnboardPage';
 import AdminDashboard from './pages/AdminDashboard';
 import DonationDetails from './pages/DonationDetails';
 import ClaimModal from './pages/ClaimModal';
+import AdminDashboard from './pages/AdminDashboard';
 
 function App() {
   return (
@@ -29,7 +29,6 @@ function App() {
           <Route path="donor" element={<DonorDashboard />} />
           <Route path="pickup/:id" element={<PickupScreen />} />
           <Route path="active-trip" element={<ActiveTripPage />} />
-
           <Route path="map" element={<HomeMapListPage />} />
           <Route path="otp-pickup" element={<OTPPickupPage />} />
           <Route path="otp-verify" element={<OTPVerify />} />
