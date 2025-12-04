@@ -24,7 +24,10 @@ import Reports from './pages/AdminDash/Reports';
 import DonorRegister from './pages/DonorRegister';
 import VolunteerRegister from './pages/VolunteerRegister';
 import AdminLogin from './pages/AdminLogin';
-import Login from './pages/Login';import NotFound from './pages/NotFound';
+import Login from './pages/Login';
+import NotFound from './pages/NotFound';
+//import DonationRadar from './pages/UniquePages/DonationRadar';
+//import DonationTimeline from './pages/UniquePages/DonationTimeline';
 
 function App() {
   return (
@@ -56,6 +59,9 @@ function App() {
           <Route path="admin/user-management" element={<UserManagement />} />
           <Route path="admin/reports" element={<Reports />} />
           <Route path="donation/:id" element={<DonationDetails />} />
+
+          <Route path="*" element={<NotFound />} />
+
         </Route>
       </Routes>
     </Router>
