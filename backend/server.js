@@ -9,7 +9,24 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 mongoose.connect(process.env.MONGO_URL || 'mongodb://localhost:27017/foodDonation')
-.then(() => console.log('MongoDB connected')).catch(err => console.log(err));
+.then(async () => {
+  console.log('MongoDB connected');
+  // Seed admin
+  const User = require('./schema/User');
+  const adminExists = await User.findOne({ role: 'admin' });
+  if (!adminExists) {
+    const bcrypt = require('bcryptjs');
+    const hashed = await bcrypt.hash('admin123', 10);
+    await User.create({
+      name: 'Admin',
+      email: 'admin@example.com',
+      password: hashed,
+      role: 'admin',
+      location: { type: 'Point', coordinates: [77.2, 28.6] }
+    });
+    console.log('Admin user created: admin@example.com / admin123');
+  }
+}).catch(err => console.log(err));
 
 app.use(cors());
 app.use(express.json());

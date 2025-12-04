@@ -61,14 +61,12 @@ const StorageToggle = ({ storageRequirement, setStorageRequirement }) => {
                 <button
                     type="button"
                     onClick={toggle}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
-                        isChilled ? 'bg-emerald-600' : 'bg-gray-200'
-                    }`}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${isChilled ? 'bg-emerald-600' : 'bg-gray-200'
+                        }`}
                 >
                     <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                            isChilled ? 'translate-x-6' : 'translate-x-1'
-                        }`}
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isChilled ? 'translate-x-6' : 'translate-x-1'
+                            }`}
                     />
                 </button>
             </div>
@@ -125,40 +123,100 @@ const DonorDashboard = () => {
         }
     };
 
+    const [locationCoords, setLocationCoords] = useState(null);
+    const [isDetectingLoc, setIsDetectingLoc] = useState(false);
+
+    // ... (keep existing state)
+
     const handleLocationDetect = () => {
-        // Mocking Geolocation API call for speed
-        setFormData(prev => ({ ...prev, location: '123 Main St, Anytown, USA (GPS Verified)' }));
+        if (!navigator.geolocation) {
+            alert("Geolocation is not supported by your browser");
+            return;
+        }
+        setIsDetectingLoc(true);
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const { latitude, longitude } = position.coords;
+                setLocationCoords({
+                    type: 'Point',
+                    coordinates: [longitude, latitude]
+                });
+
+                try {
+                    // Use OpenStreetMap Nominatim for free reverse geocoding
+                    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+                    const data = await res.json();
+                    if (data && data.display_name) {
+                        // Construct a shorter address if needed, or use full display_name
+                        // Taking the first few parts for brevity usually works well
+                        const parts = data.display_name.split(',').slice(0, 4).join(',');
+                        setFormData(prev => ({ ...prev, location: parts }));
+                    } else {
+                        setFormData(prev => ({ ...prev, location: `Lat: ${latitude.toFixed(4)}, Lng: ${longitude.toFixed(4)}` }));
+                    }
+                } catch (err) {
+                    console.error("Reverse geocoding error:", err);
+                    setFormData(prev => ({ ...prev, location: `Lat: ${latitude.toFixed(4)}, Lng: ${longitude.toFixed(4)}` }));
+                } finally {
+                    setIsDetectingLoc(false);
+                }
+            },
+            (error) => {
+                console.error("Error detecting location: ", error);
+                alert("Unable to retrieve your location");
+                setIsDetectingLoc(false);
+            }
+        );
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!formData.isSafe) return; // Block submission if safety is not confirmed
+        if (!formData.isSafe) return;
 
         setIsPosting(true);
 
-        const dataToSend = {
-            ...formData,
-            quantity: `${mealCount} meals`,
-            storageRequirement: storageRequirement,
-            timestamp: new Date().toISOString(),
-            // Mock map URL, image URL, etc.
-        };
+        try {
+            // Calculate bestBefore date based on expiryTime string
+            const now = new Date();
+            let hoursToAdd = 2;
+            if (formData.expiryTime.includes('1')) hoursToAdd = 1;
+            if (formData.expiryTime.includes('3')) hoursToAdd = 3;
+            // 'Custom' logic omitted for brevity, default to 2
 
-        console.log('Posting Donation:', dataToSend);
+            const bestBeforeDate = new Date(now.getTime() + hoursToAdd * 60 * 60 * 1000);
 
-        // Mock API call to satisfy the prototype requirement
-        await new Promise(resolve => setTimeout(resolve, 1500));
+            const payload = {
+                foodType: formData.foodType,
+                quantity: `${mealCount} meals`, // or convert to kg if backend expects
+                bestBefore: bestBeforeDate,
+                location: locationCoords, // GeoJSON
+                address: formData.location, // Text address
+                imageUrl: "https://placehold.co/600x400?text=Food+Image", // Placeholder until real upload
+                storageRequirement
+            };
 
-        setIsPosting(false);
-        setSubmitted(true);
-        // Reset form after successful submission
-        setTimeout(() => {
-            setSubmitted(false);
-            setFormData({ foodType: '', category: '', expiryTime: '2 hours', location: '123 Main St, Anytown, USA (Auto-Detected)', donorName: 'My Restaurant', isSafe: false, });
-            setMealCount(20);
-            setStorageRequirement('Ambient');
-            setPhotoPreview(null);
-        }, 3000);
+            // Use the apiRequest helper
+            const token = localStorage.getItem('token');
+            if (!token) throw new Error("Please login first");
+
+            await import('../api').then(module => module.apiRequest('/donations', 'POST', payload, token));
+
+            setSubmitted(true);
+            setTimeout(() => {
+                setSubmitted(false);
+                setFormData({ foodType: '', category: '', expiryTime: '2 hours', location: '', donorName: 'My Restaurant', isSafe: false, });
+                setMealCount(20);
+                setStorageRequirement('Ambient');
+                setPhotoPreview(null);
+                setLocationCoords(null);
+            }, 3000);
+
+        } catch (error) {
+            console.error("Posting failed", error);
+            alert("Failed to post donation: " + error.message);
+        } finally {
+            setIsPosting(false);
+        }
     };
 
     const isFormValid = formData.foodType && formData.category && mealCount > 0 && formData.location && formData.isSafe;
@@ -199,11 +257,10 @@ const DonorDashboard = () => {
                                                 key={cat.value}
                                                 type="button"
                                                 onClick={() => handleCategorySelect(cat.value)}
-                                                className={`flex items-center space-x-1 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
-                                                    formData.category === cat.value
-                                                        ? 'bg-emerald-600 text-white shadow-md'
-                                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                                }`}
+                                                className={`flex items-center space-x-1 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${formData.category === cat.value
+                                                    ? 'bg-emerald-600 text-white shadow-md'
+                                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                                    }`}
                                             >
                                                 <cat.icon size={16} />
                                                 <span>{cat.label}</span>
@@ -280,11 +337,10 @@ const DonorDashboard = () => {
                                                 key={time}
                                                 type="button"
                                                 onClick={() => handleExpirySelect(time)}
-                                                className={`flex items-center space-x-1 px-3 py-2 rounded-full text-sm font-medium transition-all ${
-                                                    formData.expiryTime === time
-                                                        ? 'bg-red-500 text-white shadow-md'
-                                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                                }`}
+                                                className={`flex items-center space-x-1 px-3 py-2 rounded-full text-sm font-medium transition-all ${formData.expiryTime === time
+                                                    ? 'bg-red-500 text-white shadow-md'
+                                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                                    }`}
                                             >
                                                 <Clock size={16} />
                                                 <span>{time}</span>
@@ -353,11 +409,10 @@ const DonorDashboard = () => {
                                 disabled={!isFormValid || isPosting}
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
-                                className={`w-full py-4 rounded-xl font-bold text-lg transition-all shadow-lg ${
-                                    isFormValid
-                                        ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                                        : 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                                }`}
+                                className={`w-full py-4 rounded-xl font-bold text-lg transition-all shadow-lg ${isFormValid
+                                    ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                                    : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                                    }`}
                             >
                                 {isPosting ? (
                                     <span className="flex items-center justify-center">
