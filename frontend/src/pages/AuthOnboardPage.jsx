@@ -1,13 +1,13 @@
 // src/pages/AuthOnboardPage.jsx
 import React, { useEffect, useRef, useState } from "react";
-import { auth, db, storage } from "../firebase";
+import { auth, storage } from "../firebase";
 import {
   RecaptchaVerifier,
   signInWithPhoneNumber,
   signOut
 } from "firebase/auth";
-import { setDoc, doc, serverTimestamp } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { apiRequest } from "../api";
 
 const styles = {
   container: { maxWidth: 420, margin: "24px auto", fontFamily: "system-ui, Roboto, Arial" },
@@ -30,12 +30,11 @@ export default function AuthOnboardPage() {
   // profile
   const [coords, setCoords] = useState(null);
   const [name, setName] = useState("");
-  const [role, setRole] = useState("VOLUNTEER");
+  const [role, setRole] = useState("volunteer"); // lowercase to match backend enum
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
 
   useEffect(() => {
-    // cleanup preview object url when file changes/unmount
     return () => {
       if (preview) URL.revokeObjectURL(preview);
     };
@@ -43,7 +42,6 @@ export default function AuthOnboardPage() {
   }, []);
 
   useEffect(() => {
-    // Setup invisible reCAPTCHA only once when needed
     if (!recaptchaRef.current && typeof window !== "undefined") {
       try {
         recaptchaRef.current = new RecaptchaVerifier(
@@ -52,7 +50,7 @@ export default function AuthOnboardPage() {
           auth
         );
       } catch (e) {
-        // ignore if already set
+        // ignore
       }
     }
   }, []);
@@ -72,8 +70,7 @@ export default function AuthOnboardPage() {
     } catch (err) {
       console.error(err);
       alert("OTP bhejne me error: " + (err.message || err));
-      // try resetting recaptcha if available
-      try { if (recaptchaRef.current) recaptchaRef.current.clear(); } catch(e){}
+      try { if (recaptchaRef.current) recaptchaRef.current.clear(); } catch (e) { }
     } finally {
       setLoading(false);
     }
@@ -85,8 +82,21 @@ export default function AuthOnboardPage() {
     setLoading(true);
     try {
       await confirmationResult.confirm(otp.trim());
-      // signed in
-      setStep("location");
+      // Firebase Auth success. Now check Backend.
+      try {
+        const data = await apiRequest('/users/login', 'POST', { phone });
+        // User exists
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        setStep("done");
+      } catch (apiErr) {
+        if (apiErr.message === 'User not found') {
+          // User needs to register
+          setStep("location");
+        } else {
+          throw apiErr;
+        }
+      }
     } catch (err) {
       console.error(err);
       alert("OTP verify failed: " + (err.message || err));
@@ -96,7 +106,13 @@ export default function AuthOnboardPage() {
   };
 
   const logout = async () => {
-    try { await signOut(auth); setStep("auth"); setConfirmationResult(null); } catch(e){ console.error(e) }
+    try {
+      await signOut(auth);
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      setStep("auth");
+      setConfirmationResult(null);
+    } catch (e) { console.error(e) }
   };
 
   // --- Location ---
@@ -141,7 +157,7 @@ export default function AuthOnboardPage() {
     setLoading(true);
     try {
       const user = auth.currentUser;
-      if (!user) return alert("Not signed in");
+      if (!user) return alert("Not signed in (Firebase)");
       if (!name.trim()) { alert("Name daalna zaroori hai"); setLoading(false); return; }
 
       let photoURL = null;
@@ -151,17 +167,18 @@ export default function AuthOnboardPage() {
         photoURL = await getDownloadURL(snap.ref);
       }
 
-      const userDoc = {
-        uid: user.uid,
+      const payload = {
         name: name.trim(),
         role,
-        phoneNumber: user.phoneNumber || phone,
+        phone: user.phoneNumber || phone,
         photoURL,
-        location: coords || null,
-        verified: false,
-        createdAt: serverTimestamp()
+        location: coords ? { type: 'Point', coordinates: [coords.lng, coords.lat] } : null, // GeoJSON format
+        // email/password optional
       };
-      await setDoc(doc(db, "users", user.uid), userDoc);
+
+      const data = await apiRequest('/users/register', 'POST', payload);
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
       setStep("done");
     } catch (err) {
       console.error(err);
@@ -244,8 +261,9 @@ export default function AuthOnboardPage() {
           <div style={{ marginTop: 8 }}>
             <label style={{ fontSize: 13 }}>Role</label>
             <select style={{ ...styles.input, marginTop: 6 }} value={role} onChange={(e) => setRole(e.target.value)}>
-              <option value="VOLUNTEER">Volunteer</option>
-              <option value="NGO">NGO</option>
+              <option value="volunteer">Volunteer</option>
+              <option value="ngo">NGO</option>
+              <option value="donor">Donor</option>
             </select>
           </div>
 
@@ -278,7 +296,7 @@ export default function AuthOnboardPage() {
       )}
 
       <div style={{ textAlign: "center", marginTop: 8 }}>
-        <small style={{ color: "#666" }}>Built for hackathon demo — Firebase required.</small>
+        <small style={{ color: "#666" }}>Built for hackathon demo — Firebase + Node.js</small>
       </div>
     </div>
   );
