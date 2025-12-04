@@ -21,7 +21,10 @@ import ActiveDonationsMap from './pages/AdminDash/ActiveDonationMap';
 import NGOApproval from './pages/AdminDash/NGOApproval';
 import UserManagement from './pages/AdminDash/UserManagement';
 import Reports from './pages/AdminDash/Reports';
-import NotFound from './pages/NotFound';
+import DonorRegister from './pages/DonorRegister';
+import VolunteerRegister from './pages/VolunteerRegister';
+import AdminLogin from './pages/AdminLogin';
+import Login from './pages/Login';import NotFound from './pages/NotFound';
 
 function App() {
   return (
@@ -29,6 +32,10 @@ function App() {
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
+          <Route path="register/donor" element={<DonorRegister />} />
+          <Route path="register/volunteer" element={<VolunteerRegister />} />
+          <Route path="login" element={<Login />} />
+          <Route path="admin-login" element={<AdminLogin />} />
           <Route path="volunteer" element={<VolunteerFeed />} />
           <Route path="donor" element={<DonorDashboard />} />
           <Route path="pickup/:id" element={<PickupScreen />} />
@@ -49,7 +56,6 @@ function App() {
           <Route path="admin/user-management" element={<UserManagement />} />
           <Route path="admin/reports" element={<Reports />} />
           <Route path="donation/:id" element={<DonationDetails />} />
-          <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
     </Router>

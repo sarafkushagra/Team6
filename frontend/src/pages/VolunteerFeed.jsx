@@ -22,14 +22,23 @@ const VolunteerFeed = () => {
     }, []);
 
     const handleClaim = async (id) => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            alert('Please login as volunteer');
+            return;
+        }
         try {
             const res = await fetch(`http://localhost:5000/api/donations/${id}/claim`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ volunteerId: "Vol-123" })
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
             });
             if (res.ok) {
                 navigate(`/pickup/${id}`);
+            } else {
+                alert('Claim failed');
             }
         } catch (error) {
             console.error("Error claiming donation", error);

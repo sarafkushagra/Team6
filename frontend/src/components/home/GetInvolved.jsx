@@ -10,7 +10,7 @@ const actions = [
         description: "Make a one-time or recurring donation to support our programs.",
         icon: Gift,
         color: "bg-emerald-600",
-        link: "/donate",
+        link: "/register/donor",
         btn: "Donate Now"
     },
     {
@@ -28,7 +28,7 @@ const actions = [
         description: "Join our team and help with food distribution and events.",
         icon: HeartHandshake,
         color: "bg-blue-500",
-        link: "/volunteer",
+        link: "/register/volunteer",
         btn: "Join Us"
     }
 ];
