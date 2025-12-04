@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { MapPin, Phone, MessageSquare, ShieldCheck, Navigation } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -7,23 +7,28 @@ const PickupScreen = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [otp, setOtp] = useState('');
+    const [donation, setDonation] = useState(null);
     const [verified, setVerified] = useState(false);
 
+    useEffect(() => {
+        // Mock donation data
+        const mockDonation = {
+            foodType: 'Rice and Curry',
+            quantity: '5 meals',
+            donorName: 'John Doe',
+            address: '123 Main St',
+            phone: '123-456-7890'
+        };
+        setDonation(mockDonation);
+    }, [id]);
+
     const handleVerify = async () => {
-        try {
-            const res = await fetch(`http://localhost:5000/api/donations/${id}/verify`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ otp })
-            });
-            if (res.ok) {
-                setVerified(true);
-                setTimeout(() => navigate('/volunteer'), 3000);
-            } else {
-                alert("Invalid OTP");
-            }
-        } catch (error) {
-            console.error("Error verifying", error);
+        // Mock verification
+        if (otp === '1234') {
+            setVerified(true);
+            setTimeout(() => navigate('/distribution'), 3000);
+        } else {
+            alert("Invalid OTP");
         }
     };
 

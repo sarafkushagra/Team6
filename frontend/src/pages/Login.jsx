@@ -14,23 +14,18 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      const res = await fetch('http://localhost:5000/api/users/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form)
-      });
-      const data = await res.json();
-      if (res.ok) {
-        localStorage.setItem('token', data.token);
-        if (data.user.role === 'donor') navigate('/donor');
-        else if (data.user.role === 'volunteer') navigate('/volunteer-feed');
-        else if (data.user.role === 'admin') navigate('/admin');
-      } else {
-        alert('Login failed');
-      }
-    } catch (error) {
-      console.error(error);
+    // Mock login for demo
+    if (form.email === 'donor@example.com' && form.password === 'donor123') {
+      localStorage.setItem('token', 'mock-donor-token');
+      navigate('/donor');
+    } else if (form.email === 'volunteer@example.com' && form.password === 'volunteer123') {
+      localStorage.setItem('token', 'mock-volunteer-token');
+      navigate('/volunteer');
+    } else if (form.email === 'admin@example.com' && form.password === 'admin123') {
+      localStorage.setItem('token', 'mock-admin-token');
+      navigate('/admin');
+    } else {
+      alert('Invalid credentials. Use demo accounts: donor@example.com/donor123, volunteer@example.com/volunteer123, admin@example.com/admin123');
     }
   };
 

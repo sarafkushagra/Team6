@@ -4,7 +4,6 @@ import { motion } from 'framer-motion';
 
 // --- Helper Components ---
 
-// 1. Quantity Stepper
 const QuantityStepper = ({ mealCount, setMealCount }) => {
     const minMeals = 5;
     const maxMeals = 500;
@@ -61,14 +60,12 @@ const StorageToggle = ({ storageRequirement, setStorageRequirement }) => {
                 <button
                     type="button"
                     onClick={toggle}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
-                        isChilled ? 'bg-emerald-600' : 'bg-gray-200'
-                    }`}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${isChilled ? 'bg-emerald-600' : 'bg-gray-200'
+                        }`}
                 >
                     <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                            isChilled ? 'translate-x-6' : 'translate-x-1'
-                        }`}
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isChilled ? 'translate-x-6' : 'translate-x-1'
+                            }`}
                     />
                 </button>
             </div>
@@ -95,6 +92,8 @@ const DonorDashboard = () => {
     const [submitted, setSubmitted] = useState(false);
     const [photoPreview, setPhotoPreview] = useState(null);
     const [isPosting, setIsPosting] = useState(false);
+
+    const isFormValid = formData.foodType && formData.category && formData.location && photoPreview && formData.isSafe;
 
     const commonCategories = [
         { label: 'Cooked Veg', icon: Soup, value: 'Cooked Veg' },
@@ -136,32 +135,60 @@ const DonorDashboard = () => {
 
         setIsPosting(true);
 
+        const token = localStorage.getItem('token');
+        if (!token) {
+            alert('Please login first');
+            setIsPosting(false);
+            return;
+        }
+
         const dataToSend = {
-            ...formData,
+            foodType: formData.foodType,
             quantity: `${mealCount} meals`,
+            bestBefore: new Date(Date.now() + 3600000 * 2).toISOString(), // Mock 2 hours
+            address: formData.location, // User entered text as location
+            location: { coordinates: [77.2090, 28.6139] }, // Mock Delhi coordinates for now
+            donorName: formData.donorName,
             storageRequirement: storageRequirement,
-            timestamp: new Date().toISOString(),
-            // Mock map URL, image URL, etc.
+            imageUrl: photoPreview || "https://placehold.co/600x400?text=Food+Image"
         };
 
-        console.log('Posting Donation:', dataToSend);
-
-        // Mock API call to satisfy the prototype requirement
-        await new Promise(resolve => setTimeout(resolve, 1500));
-
-        setIsPosting(false);
-        setSubmitted(true);
-        // Reset form after successful submission
-        setTimeout(() => {
-            setSubmitted(false);
-            setFormData({ foodType: '', category: '', expiryTime: '2 hours', location: '123 Main St, Anytown, USA (Auto-Detected)', donorName: 'My Restaurant', isSafe: false, });
-            setMealCount(20);
-            setStorageRequirement('Ambient');
-            setPhotoPreview(null);
-        }, 3000);
+        try {
+            const res = await fetch('http://localhost:5000/api/donations', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(dataToSend)
+            });
+            if (res.ok) {
+                setSubmitted(true);
+                // Reset form after successful submission
+                setTimeout(() => {
+                    setSubmitted(false);
+                    setFormData({ 
+                        foodType: '', 
+                        category: '', 
+                        expiryTime: '2 hours', 
+                        location: '123 Main St, Anytown, USA (Auto-Detected)', 
+                        donorName: 'My Restaurant', 
+                        isSafe: false 
+                    });
+                    setMealCount(20);
+                    setStorageRequirement('Ambient');
+                    setPhotoPreview(null);
+                }, 3000);
+            } else {
+                alert('Failed to post donation');
+            }
+        } catch (error) {
+            console.error("Error posting donation", error);
+            alert('Error posting donation');
+        } finally {
+            setIsPosting(false);
+        }
     };
-
-    const isFormValid = formData.foodType && formData.category && mealCount > 0 && formData.location && formData.isSafe;
 
     return (
         <div className="min-h-screen bg-gray-50 p-4 sm:p-8 font-['Inter']">
@@ -199,11 +226,10 @@ const DonorDashboard = () => {
                                                 key={cat.value}
                                                 type="button"
                                                 onClick={() => handleCategorySelect(cat.value)}
-                                                className={`flex items-center space-x-1 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
-                                                    formData.category === cat.value
+                                                className={`flex items-center space-x-1 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${formData.category === cat.value
                                                         ? 'bg-emerald-600 text-white shadow-md'
                                                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                                }`}
+                                                    }`}
                                             >
                                                 <cat.icon size={16} />
                                                 <span>{cat.label}</span>
@@ -280,11 +306,10 @@ const DonorDashboard = () => {
                                                 key={time}
                                                 type="button"
                                                 onClick={() => handleExpirySelect(time)}
-                                                className={`flex items-center space-x-1 px-3 py-2 rounded-full text-sm font-medium transition-all ${
-                                                    formData.expiryTime === time
+                                                className={`flex items-center space-x-1 px-3 py-2 rounded-full text-sm font-medium transition-all ${formData.expiryTime === time
                                                         ? 'bg-red-500 text-white shadow-md'
                                                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                                }`}
+                                                    }`}
                                             >
                                                 <Clock size={16} />
                                                 <span>{time}</span>
@@ -353,23 +378,12 @@ const DonorDashboard = () => {
                                 disabled={!isFormValid || isPosting}
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
-                                className={`w-full py-4 rounded-xl font-bold text-lg transition-all shadow-lg ${
-                                    isFormValid
-                                        ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                                        : 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                                }`}
+                                className={`w-full py-4 rounded-xl font-bold text-lg shadow-lg transition-all ${isFormValid && !isPosting
+                                        ? 'bg-gradient-to-r from-emerald-600 to-green-500 text-white shadow-emerald-200'
+                                        : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                    }`}
                             >
-                                {isPosting ? (
-                                    <span className="flex items-center justify-center">
-                                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                        </svg>
-                                        Requesting Pickup...
-                                    </span>
-                                ) : (
-                                    'Post Donation & Request Pickup'
-                                )}
+                                {isPosting ? 'Posting Donation...' : 'Post Donation Now'}
                             </motion.button>
                         </form>
                     )}

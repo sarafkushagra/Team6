@@ -11,7 +11,7 @@ import OTPPickupPage from './pages/OTPPickupPage';
 import OTPVerify from './pages/OTPVerify';
 import DistributionPage from './pages/DistributionPage';
 import DonationDetailPage from './pages/DonationDetailPage';
-// import DonationPosted from './pages/DonationPosted';
+import DonationPosted from './pages/DonationPosted';
 import CreateDonation from './pages/CreateDonation';
 import AuthOnboardPage from './pages/AuthOnboardPage';
 import AdminDashboard from './pages/AdminDashboard';
@@ -47,7 +47,7 @@ function App() {
           <Route path="distribution" element={<DistributionPage />} />
           <Route path="donation/:id" element={<DonationDetailPage />} />
           <Route path="donor/create" element={<CreateDonation />} />
-          {/* <Route path="donor/posted" element={<DonationPosted />} /> */}
+          <Route path="donor/posted" element={<DonationPosted />} />
           <Route path="donation-details" element={<DonationDetails />} />
           <Route path="claim/:id" element={<ClaimModal />} />
           <Route path="auth" element={<AuthOnboardPage />} />

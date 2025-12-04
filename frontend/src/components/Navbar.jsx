@@ -22,13 +22,16 @@ const Navbar = () => {
                     <div className="hidden md:flex items-center gap-6">
                         <NavLink to="/" active={isActive('/')}>Home</NavLink>
                         <NavLink to="/volunteer" active={isActive('/volunteer')}>Volunteer</NavLink>
+                        <NavLink to="/map" active={isActive('/map')}>Map</NavLink>
                         <NavLink to="/donor" active={isActive('/donor')}>Donate</NavLink>
                     </div>
 
                     <div className="flex items-center gap-3">
+                        <Link to="/login">
                         <button className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-600">
                             <User size={20} />
                         </button>
+                            </Link>
                         <button className="md:hidden p-2 rounded-full hover:bg-gray-100 text-gray-600">
                             <Menu size={20} />
                         </button>

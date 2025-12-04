@@ -10,12 +10,12 @@ import { getMessaging } from "firebase/messaging";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "your-api-key",
-  authDomain: "your-project.firebaseapp.com",
-  projectId: "your-project-id",
-  storageBucket: "your-project.appspot.com",
+  apiKey: "demo-api-key",
+  authDomain: "demo.firebaseapp.com",
+  projectId: "demo-project",
+  storageBucket: "demo.appspot.com",
   messagingSenderId: "123456789",
-  appId: "your-app-id"
+  appId: "demo-app-id"
 };
 
 // Initialize Firebase

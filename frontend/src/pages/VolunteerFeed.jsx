@@ -9,40 +9,40 @@ const VolunteerFeed = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        fetch('http://localhost:5000/api/donations')
-            .then(res => res.json())
-            .then(data => {
-                setDonations(data);
-                setLoading(false);
-            })
-            .catch(err => {
-                console.error("Failed to fetch donations", err);
-                setLoading(false);
-            });
+        // Mock donations data
+        const mockDonations = [
+            {
+                _id: '1',
+                foodType: 'Rice and Curry',
+                quantity: '5 meals',
+                bestBefore: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), // 2 hours from now
+                location: 'Downtown',
+                address: '123 Main St',
+                donorName: 'John Doe',
+                imageUrl: 'https://via.placeholder.com/300x200?text=Rice+Curry',
+                status: 'available'
+            },
+            {
+                _id: '2',
+                foodType: 'Pizza Slices',
+                quantity: '10 slices',
+                bestBefore: new Date(Date.now() + 1 * 60 * 60 * 1000).toISOString(), // 1 hour from now
+                location: 'Uptown',
+                address: '456 Elm St',
+                donorName: 'Jane Smith',
+                imageUrl: 'https://via.placeholder.com/300x200?text=Pizza',
+                status: 'available'
+            }
+        ];
+        setDonations(mockDonations);
+        setLoading(false);
     }, []);
 
-    const handleClaim = async (id) => {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            alert('Please login as volunteer');
-            return;
-        }
-        try {
-            const res = await fetch(`http://localhost:5000/api/donations/${id}/claim`, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            if (res.ok) {
-                navigate(`/pickup/${id}`);
-            } else {
-                alert('Claim failed');
-            }
-        } catch (error) {
-            console.error("Error claiming donation", error);
-        }
+    const handleClaim = (id) => {
+        // Mock claim
+        alert('Donation claimed! OTP sent to donor.');
+        localStorage.setItem('claimedDonationId', id);
+        navigate('/otp-verify');
     };
 
     if (loading) return <div className="flex justify-center p-10">Loading...</div>;
@@ -61,7 +61,7 @@ const VolunteerFeed = () => {
 
             <div className="grid md:grid-cols-2 gap-6">
                 {donations.map((donation, index) => (
-                    <DonationCard key={donation.id} donation={donation} onClaim={handleClaim} index={index} />
+                    <DonationCard key={donation._id || donation.id} donation={donation} onClaim={handleClaim} index={index} />
                 ))}
             </div>
         </div>
@@ -95,7 +95,7 @@ const DonationCard = ({ donation, onClaim, index }) => {
                 <div className="flex justify-between items-start mb-2">
                     <h3 className="text-xl font-bold text-gray-900">{donation.foodType}</h3>
                     <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                        {new Date(donation.expiryTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {donation.bestBefore ? new Date(donation.bestBefore).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A'}
                     </span>
                 </div>
                 <p className="text-gray-600 text-sm mb-4">from {donation.donorName}</p>
@@ -103,7 +103,7 @@ const DonationCard = ({ donation, onClaim, index }) => {
                 <div className="flex items-center gap-4 text-sm text-gray-500 mb-6">
                     <div className="flex items-center gap-1">
                         <MapPin size={16} />
-                        {donation.location}
+                        {donation.address || donation.location}
                     </div>
                     <div className="flex items-center gap-1">
                         <Clock size={16} />
@@ -113,7 +113,7 @@ const DonationCard = ({ donation, onClaim, index }) => {
 
                 {isAvailable ? (
                     <button
-                        onClick={() => onClaim(donation.id)}
+                        onClick={() => onClaim(donation._id || donation.id)}
                         className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
                     >
                         Claim Donation <ArrowRight size={18} />
