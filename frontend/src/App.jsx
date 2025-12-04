@@ -21,6 +21,7 @@ import ActiveDonationsMap from './pages/AdminDash/ActiveDonationMap';
 import NGOApproval from './pages/AdminDash/NGOApproval';
 import UserManagement from './pages/AdminDash/UserManagement';
 import Reports from './pages/AdminDash/Reports';
+import NotFound from './pages/NotFound';
 
 function App() {
   return (
@@ -48,6 +49,7 @@ function App() {
           <Route path="admin/user-management" element={<UserManagement />} />
           <Route path="admin/reports" element={<Reports />} />
           <Route path="donation/:id" element={<DonationDetails />} />
+          <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
     </Router>
