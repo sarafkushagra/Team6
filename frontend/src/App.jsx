@@ -11,18 +11,16 @@ import OTPPickupPage from './pages/OTPPickupPage';
 import OTPVerify from './pages/OTPVerify';
 import DistributionPage from './pages/DistributionPage';
 import DonationDetailPage from './pages/DonationDetailPage';
-import DonationPosted from './pages/DonationPosted';
+// import DonationPosted from './pages/DonationPosted';
 import CreateDonation from './pages/CreateDonation';
 import AuthOnboardPage from './pages/AuthOnboardPage';
 import AdminDashboard from './pages/AdminDashboard';
 import DonationDetails from './pages/DonationDetails';
 import ClaimModal from './pages/ClaimModal';
-import AdminDashboard from './pages/AdminDashboard';
 import ActiveDonationsMap from './pages/AdminDash/ActiveDonationMap';
 import NGOApproval from './pages/AdminDash/NGOApproval';
 import UserManagement from './pages/AdminDash/UserManagement';
 import Reports from './pages/AdminDash/Reports';
-import DonationDetails from './pages/DonationDetails';
 
 function App() {
   return (
@@ -40,7 +38,7 @@ function App() {
           <Route path="distribution" element={<DistributionPage />} />
           <Route path="donation/:id" element={<DonationDetailPage />} />
           <Route path="donor/create" element={<CreateDonation />} />
-          <Route path="donor/posted" element={<DonationPosted />} />
+          {/* <Route path="donor/posted" element={<DonationPosted />} /> */}
           <Route path="donation-details" element={<DonationDetails />} />
           <Route path="claim/:id" element={<ClaimModal />} />
           <Route path="auth" element={<AuthOnboardPage />} />

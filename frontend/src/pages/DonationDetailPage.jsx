@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "../firebase";
-import ClaimModal from "../components/ClaimModal";
+import ClaimModal from "./ClaimModal";
 
 // Expected donation doc fields:
 // donorName, donorPhone, donorLocation: {lat,lng,address}, imageUrl, foodType, quantityKg, bestBefore, status
